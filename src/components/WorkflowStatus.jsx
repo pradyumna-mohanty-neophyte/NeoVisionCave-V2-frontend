@@ -23,7 +23,7 @@
 
 //   const steps = [
 //     { id: 0, title: 'Scan Barcode', icon: Barcode, snackbar: { message: 'Barcode scanned successfully!', success: true } },
-//     { id: 1, title: 'Camera Scan', icon: Camera, snackbar: { message: 'Camera scan completed!', success: true } },
+//     { id: 1, title: 'Product Scan', icon: Camera, snackbar: { message: 'Product Scan completed!', success: true } },
 //     { id: 2, title: 'Processing', icon: CircuitBoard, snackbar: { message: 'Processing successful!', success: true } },
 //     { id: 3, title: 'Results Ready', icon: CheckCircle2, snackbar: { message: 'Results are ready!', success: true } },
 //   ];
@@ -167,7 +167,7 @@ const WorkflowStatus = ({ statusUpdates }) => {
 
   const steps = [
     { id: 0, type: 'barcode', title: 'Scan Barcode', icon: Barcode, snackbar: { message: 'Barcode scanned successfully!', success: true } },
-    { id: 1, type: 'camera_scan', title: 'Camera Scan', icon: Camera, snackbar: { message: 'Camera scan completed!', success: true } },
+    { id: 1, type: 'camera_scan', title: 'Product Scan', icon: Camera, snackbar: { message: 'Product Scan completed!', success: true } },
     { id: 2, type: 'processing', title: 'Processing', icon: CircuitBoard, snackbar: { message: 'Processing successful!', success: true } },
     { id: 3, type: 'results', title: 'Results Ready', icon: CheckCircle2, snackbar: { message: 'Results are ready!', success: true } },
   ];

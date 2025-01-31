@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import { FiRefreshCw } from "react-icons/fi";
 import * as XLSX from "xlsx";
 import { io } from "socket.io-client";
 import { MdBlurLinear } from "react-icons/md";
@@ -23,9 +24,13 @@ import {
   Box,
   Snackbar,
   Alert,
-  Card, CardContent, Divider, Dialog, DialogTitle, DialogContent, DialogActions
+  Card, CardContent, Divider, Dialog, DialogTitle, DialogContent, DialogActions, CircularProgress
 } from "@mui/material";
 import DownloadIcon from "@mui/icons-material/Download";
+import EditIcon from "@mui/icons-material/Edit";
+import DeleteIcon from "@mui/icons-material/Delete";
+import IconButton from "@mui/material/IconButton";
+import axios from "axios";
 // import DatePickerComp from "./Calendar";
 import DateRangePickerComp from "./Calendar2dates";
 import {
@@ -40,7 +45,8 @@ import {
 import logo from "./image/logo.jpeg";
 import WorkflowStatus from "./WorkflowStatus";
 export default function Home2() {
-  const src = "http://localhost:8000/video";
+  const [src, setSrc] = useState("http://localhost:8000/video")
+  // const src = "http://localhost:8000/video";
   const [socket, setSocket] = useState(null);
   const [product, setproduct] = useState(null);
   const [allproduct, setallproduct] = useState([]);
@@ -58,6 +64,51 @@ export default function Home2() {
   const [editedData, setEditedData] = useState({});
   const [openConfirmDialog, setOpenConfirmDialog] = useState(false);
   const [statusUpdates, setStatusUpdates] = useState([]); // Add this state
+  const [telnetStatus, setTelnetStatus] = useState(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [rowToDelete, setRowToDelete] = useState(null);
+
+  // Function to open the delete dialog
+  const handleOpenDeleteDialog = (index) => {
+    setRowToDelete(index);
+    setDeleteDialogOpen(true);
+  };
+
+  // Function to handle deletion
+  const handleDeleteRow = () => {
+    if (rowToDelete !== null) {
+      setTableData((prevData) => prevData.filter((_, i) => i !== rowToDelete));
+      setDeleteDialogOpen(false);
+      setRowToDelete(null);
+    }
+  };
+
+
+  const handleRestart = async () => {
+    setSrc("")
+    try {
+      console.log("Restarting...");
+      // Perform any necessary actions here
+      console.log("Function called! Page will reload in 10 seconds...");
+
+      // Set a timer to reload the page after 10 seconds
+      setTimeout(function () {
+        window.location.reload();
+      }, 8000); // 8000 milliseconds 
+
+      // Make the API request to the Node.js backend
+      const response = await axios.get(
+        'http://localhost:5000/api/restart',
+        {
+          headers: {
+            Accept: "application/json",
+          },
+        }
+      );
+    } catch (error) {
+      console.error("Error restarting:", error);
+    }
+  };
 
 
   const handleStartClick = async () => {
@@ -126,7 +177,7 @@ export default function Home2() {
   const handleSaveChanges = async () => {
     try {
       setIsLoading(true);
-  
+
       // Prepare the data to be sent to the backend
       const updateData = {
         batch_no: editedData.batchNo,
@@ -139,13 +190,13 @@ export default function Home2() {
         metadata_id: editedData.metadata_id,
         updateData: updateData
       });
-  
+
       // Make API call to update the database
       const response = await updateMetadata(editedData.metadata_id, updateData);
-  
+
       if (response.data) {  // Check response from your backend
         // Update local state
-        setTableData(tableData.map((item) => 
+        setTableData(tableData.map((item) =>
           item.metadata_id === editedData.metadata_id ? {
             ...item,
             batchNo: editedData.batchNo,
@@ -154,7 +205,7 @@ export default function Home2() {
             expDate: editedData.expDate
           } : item
         ));
-  
+
         // setSnackbarConfig({
         //   open: true,
         //   message: "Row updated successfully",
@@ -269,6 +320,36 @@ export default function Home2() {
 
       newSocket.on("connect", () => {
         console.log("Socket Connected!");  // Add this log to confirm the connection
+      });
+
+      // Handle telnet events
+      newSocket.on("telnet_status", (data) => {
+        console.log("Received telnet status from socket:", data);
+
+        // Show snackbar if status is "error"
+        if (data.status === "error") {
+          setSnackbarConfig({
+            open: true,
+            message: data.message || "Telnet connection failed",
+            severity: "error",
+          });
+        }
+      });
+
+
+      // Handle product count events
+      newSocket.on("product_count", (data) => {
+        console.log("Received product_count status from socket:", data);
+
+        // Show snackbar if status is "error"
+        // if (data.status === "error") {
+        const message = data + " products detected. Keep a Single Product"
+          setSnackbarConfig({
+            open: true,
+            message: message,
+            severity: "error",
+          });
+        // }
       });
 
       // Handle barcode events
@@ -493,8 +574,6 @@ export default function Home2() {
   const [extend, setExtend] = useState();
   const [startCamera, setStartCamera] = useState(null);
   const handleExtendsValue = (newValue) => {
-    // Do something with the new value in the parent component
-    // console.log("Received value from child:", newValue);
     setExtend(newValue);
   };
 
@@ -505,7 +584,6 @@ export default function Home2() {
           }`}
       >
         <div className="w-full flex justify-between">
-          {/* <h1 className="text-xl md:text-3xl">Product Details</h1> */}
           <div className="flex">
           </div>
           <Popover
@@ -534,14 +612,11 @@ export default function Home2() {
           </Popover>
         </div>
         <div className="flex w-[100vw] h-[100vh] m-4 rounded-lg gap-3 justify-center flex-wrap">
-          {/* <div> */}
           <Grid
             container
             spacing={2}
             className="-z-[20px] w-[100vw] h-[80vh]"
           >
-
-
             <Grid
               item
               xs={12}
@@ -549,85 +624,42 @@ export default function Home2() {
               className=""
             >
               <div id="container" className="">
-                {src ? (
+                {!src ? (
+                  <Paper elevation={4} className="w-[100%] h-[700px] relative p-5 flex items-center justify-center">
+                  <CircularProgress 
+                    size={60}
+                    thickness={4}
+                    style={{
+                      color: '#1976d2', // You can change this to match your theme color
+                    }}
+                  />
+                </Paper>
+                ) : (
                   <>
                     <Paper elevation={4} className="w-[100%] h-[700px] relative p-5 ">
-                      {/* <div className="w-full h-full rounded-lg" > */}
                       <img ref={videoRef} src={src} alt="Video Stream" controls
                         className="w-full h-[600px] rounded-lg"
                         onError={() => console.error("Video stream failed to load")}
                       />
-
-                      {/* </div> */}
-                      <div style={{ marginTop: '10px', display: 'flex', alignItems: 'end', justifyContent: 'center' }}>
+                      <div className="space-x-3" style={{ marginTop: '10px', display: 'flex', alignItems: 'end', justifyContent: 'center' }}>
                         <Button
                           variant="contained"
-                          color="success"
-                          onClick={handleStartClick}
-                          style={{ marginRight: '20px' }}
+                          // color="success"
+                          onClick={handleRestart}
+                          startIcon={<FiRefreshCw />} // Add the icon here
+                          style={{
+                            padding: "10px 20px",
+                            fontSize: "16px",
+                            fontWeight: "bold",
+                            borderRadius: "8px",
+                            textTransform: "none",
+                            boxShadow: "0px 4px 6px rgba(0, 0, 0, 0.1)",
+                          }}
                         >
-                          Capture 1
+                          Restart
                         </Button>
-
-                        <Button
-                          variant="contained"
-                          color="error"
-                          onClick={handleStopClick}
-                          style={{ marginRight: '20px' }}
-                        >
-                          Capture 3
-                        </Button>
-
-                        {/* <ToggleButton
-                          value={isAutocaptureEnabled} // Set the button's value based on state
-                          onToggle={handleToggle} // Call handleToggle on toggle
-                          disabled={isLoading} // Disable toggle when loading
-                        /> */}
-
-                        <div className={`relative inline-flex items-center ${isLoading ? 'opacity-50' : ''}`}>
-                          <ToggleButton
-                            value={isAutocaptureEnabled}
-                            onToggle={!isLoading ? handleToggle : null}
-                            disabled={isLoading}
-                            thumbStyle={{
-                              width: '15px',
-                              height: '15px',
-                              borderRadius: '50%',
-                              backgroundColor: '#ffffff',
-                              boxShadow: '0px 2px 6px rgba(0, 0, 0, 0.2)'
-                            }}
-                            trackStyle={{
-                              width: '100px',
-                              height: '35px',
-                              borderRadius: '25px',
-                              backgroundColor: isAutocaptureEnabled ? '#4caf50' : '#cccccc',
-                              transition: 'background-color 0.3s'
-                            }}
-                          />
-                        </div>
                       </div>
-
                     </Paper>
-                    
-                    {/* <div style={{ background: 'lightgray' }} className="flex justify-around w-[100vw] h-26 mt-1 p-5">
-                      {tableData.length > 0 && [
-                        { label: 'EAN', value: tableData[0]?.barcode },
-                        { label: 'Batch No.', value: tableData[0]?.batchNo },
-                        { label: 'MRP', value: tableData[0]?.mrp },
-                        { label: 'MFG', value: tableData[0]?.mfgDate },
-                        { label: 'EXP', value: tableData[0]?.expDate }
-                      ].map((item, index) => (
-                        <Paper key={index} sx={{ width: '20%' }} elevation={4} className="p-4">
-                          {renderSection(item.label, item.value)}
-                        </Paper>
-                      ))}
-                    </div> */}
-                  </>
-                ) : (
-                  <>
-                    <div className="h-full flex flex-col justify-center">
-                      <img src={logo} alt="Neophyte Logo" />
-                    </div>
                   </>
                 )}
               </div>
@@ -706,6 +738,16 @@ export default function Home2() {
                         >
                           EXP
                         </TableCell>
+                        <TableCell
+                          align="center"
+                          sx={{
+                            color: "white",
+                            fontWeight: "bold",
+                            fontSize: "1.5rem",
+                          }}
+                        >
+                          {/* EXP */}
+                        </TableCell>
 
                       </TableRow>
                     </TableHead>
@@ -714,7 +756,9 @@ export default function Home2() {
                         tableData.map((result, index) => (
                           <TableRow
                             key={index}
-                            onClick={() => handleRowClick(result)}
+                            // onClick={() => handleRowClick(result)}
+                            onMouseEnter={() => setSelectedRow(index)}
+                            onMouseLeave={() => setSelectedRow(null)}
                             sx={{
                               "&:last-child td, &:last-child th": {
                                 border: 0,
@@ -759,12 +803,27 @@ export default function Home2() {
                             >
                               {result?.expDate}
                             </TableCell>
-                            {/* <TableCell
-                                align="center"
-                                sx={{ fontSize: "1rem" }}
-                              >
-                                {tab[3]}
-                              </TableCell> */}
+                            <TableCell align="center" sx={{ fontSize: "1.5rem" }}>
+                              {selectedRow === index && (
+                                <>
+                                  <IconButton
+                                    onClick={() => handleRowClick(result)}
+                                    aria-label="edit"
+                                  >
+                                    <EditIcon />
+                                  </IconButton>
+                                  <IconButton
+                                    onClick={() => {
+                                      // handleDeleteRow(index);
+                                      handleOpenDeleteDialog(index)
+                                    }}
+                                    aria-label="delete"
+                                  >
+                                    <DeleteIcon />
+                                  </IconButton>
+                                </>
+                              )}
+                            </TableCell>
                           </TableRow>
                         ))}
                     </TableBody>
@@ -827,6 +886,18 @@ export default function Home2() {
                   </DialogActions>
                 </Dialog>
 
+                {/* Delete Confirmation Dialog */}
+                <Dialog open={deleteDialogOpen} onClose={() => setDeleteDialogOpen(false)}>
+                  <DialogTitle>Confirm Deletion</DialogTitle>
+                  <DialogContent>
+                    Are you sure you want to delete this row?
+                  </DialogContent>
+                  <DialogActions>
+                    <Button onClick={() => setDeleteDialogOpen(false)} color="primary">Cancel</Button>
+                    <Button onClick={handleDeleteRow} color="error">Delete</Button>
+                  </DialogActions>
+                </Dialog>
+
                 {/* Confirmation Dialog */}
                 <Dialog open={openConfirmDialog} onClose={handleCloseConfirmDialog}>
                   <DialogTitle>Confirm Changes</DialogTitle>
@@ -850,7 +921,7 @@ export default function Home2() {
 
 
       <Snackbar
-        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+        anchorOrigin={{ vertical: "top", horizontal: "right" }}
         open={snackbarConfig.open}
         autoHideDuration={6000}
         onClose={() => setSnackbarConfig({ ...snackbarConfig, open: false })}
