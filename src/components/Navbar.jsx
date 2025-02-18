@@ -1,18 +1,25 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import logo from "./image/neo-icr.png";
+import { io } from "socket.io-client";
+
+// const sock = io("http://localhost:5000"); // Update with your backend URL
 
 function Navbar() {
+  
+
   return (
-    <>
-      <div className="flex md:justify-between items-center py-0 px-8 justify-center shadow-xl relative">
-        <div className="text-center text-2xl">
-          <img src={logo} alt="Another Logo" className="h-13 w-60" />
-        </div>
-        <div className=" md:text-center md:text-4xl hidden md:flex absolute left-[45%]">
-          Neometry
-        </div>
+    <div className="flex items-center justify-between py-2 px-8 shadow-xl">
+      {/* Logo & Temperature Container */}
+      <div className="flex items-center space-x-4">
+        {/* Neophyte Logo */}
+        <img src={logo} alt="Neophyte Logo" className="h-20 w-auto" />
+
+        
       </div>
-    </>
+
+      {/* Title */}
+      {/* <div className="text-2xl md:text-4xl">Neometry</div> */}
+    </div>
   );
 }
 

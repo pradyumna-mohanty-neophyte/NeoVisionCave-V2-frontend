@@ -4,7 +4,7 @@ import "./App.css";
 import Homepage from "./pages/Homepage";
 import Settings from "./components/settings/settings";
 import Volumetric from "./components/volumetric/volumetric";
-
+import AuthPages from "./components/user_login/UserLogin"
 function App() {
   return (
     // <div className="">
@@ -13,14 +13,14 @@ function App() {
     <div className="w-full ">
       <BrowserRouter>
         <Routes>
-          {/* <Route path="/" element={<Login />} /> */}
+          <Route path="/" element={<AuthPages />} />
           {/* <Route path="/" element={<NewLogin />} /> */}
           {/* <Route path="/" element={<ChangedLogin />} /> */}
           {/* <Route path="/dashboard" element={<Dashboard/>}/> */}
           {/* <Route path="/dashboard" element={<DashboardNew/>}/> */}
           {/* <Route path="/dashboard" element={<DashboardNew />} />*/}
           <Route path="/volumetric" element={<Volumetric />} />
-          <Route path="/" element={<Homepage />} />
+          <Route path="/home" element={<Homepage />} />
 
           <Route path="/settings" element={<Settings />} />
         </Routes>

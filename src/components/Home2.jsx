@@ -2,11 +2,19 @@ import React, { useState, useEffect, useRef } from "react";
 import { FiRefreshCw } from "react-icons/fi";
 import * as XLSX from "xlsx";
 import { io } from "socket.io-client";
+import { RefreshCw } from 'lucide-react';
+// import { Button } from "@mui/material";
+// import { FiRefreshCw } from "react-icons/fi";
 import { MdBlurLinear } from "react-icons/md";
 import { FaWindowClose } from "react-icons/fa";
 import ToggleButton from 'react-toggle-button'
 // import { saveAs } from 'file-saver';
 // import * as XLSX from 'xlsx';
+import introJs from "intro.js";
+import QrCodeIcon from "@mui/icons-material/QrCode";
+
+
+import "intro.js/minified/introjs.min.css"; // Import Intro.js styles
 import {
   Grid,
   Typography,
@@ -38,7 +46,8 @@ import {
   capture_1,
   capture_3,
   enable_autocapture,
-  updateMetadata
+  updateMetadata,
+  generateQRImage
 } from "./authservice/api";
 // import Video from "./volumetric/video";
 // import VideoComponent from "./updatedVideoPage";
@@ -67,7 +76,159 @@ export default function Home2() {
   const [telnetStatus, setTelnetStatus] = useState(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [rowToDelete, setRowToDelete] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [temperature, setTemperature] = useState(null);
+  const [showPopup, setShowPopup] = useState(false);
+  const [qrData,setqrData]=useState({
+    ean_code: "",  // Required
+    batch: "",  // Required
+    mrp:"",  // Optional
+    exp_date: "",  // Optional
+    mfg_date: "",  // Optional
+    to_print: false  // Ensure the QR code is printed
+  })
 
+  const [openQRmodal, setOpenQRmodal] = useState(false);
+
+
+  // ✅ **Intro.js Walkthrough Function**
+  const startTour = () => {
+    const intro = introJs();
+    intro.setOptions({
+      steps: [
+        {
+          element: "#video-container",
+          intro: "This is the live video feed section where you can monitor activity.",
+        },
+        {
+          element: "#restart-button",
+          intro: "Click here to restart the video stream if needed.",
+        },
+        {
+          element: "#temp-button",
+          intro: "Shows the current temperature of the system.",
+        },
+        {
+          element: "#data-table",
+          intro: "Here you can see the scanned product data.",
+        },
+        {
+          element: "#workflow-status",
+          intro: "This section displays real-time workflow status updates.",
+        },
+        {
+          element: "#health-check-button",
+          intro: "You can always run a system health check by pressing this button.",
+        },
+        {
+          element: "#start-walkthrough",
+          intro: "You can always restart the walkthrough by clicking here.",
+        }
+      ],
+      showProgress: true,
+      showBullets: false,
+      exitOnOverlayClick: false,
+      nextLabel: "Next →",
+      prevLabel: "← Back",
+      doneLabel: "Finish",
+    });
+    intro.start();
+  };
+
+// const handleGenerateQR = (result)=>{
+//   console.log("QR Code Generation Data:", result);
+
+//   // Ensure result has the necessary fields before calling API
+//   if (!result.barcode || !result.batchNo || !result.mrp || !result.expDate || !result.mfgDate) {
+//     console.error("Error: Missing required QR code data fields!", result);
+//     return;
+//   }
+// // Prepare data in the format expected by the Python backend
+
+
+
+// const qrData = {
+//   ean_code: result.barcode,  // Required
+//   batch: result.batchNo,  // Required
+//   mrp: result.mrp ? String(result.mrp) : null,  // Optional
+//   exp_date: result.expDate || null,  // Optional
+//   mfg_date: result.mfgDate || null,  // Optional
+//   to_print: true  // Ensure the QR code is printed
+// };
+
+// console.log("Formatted QR Data (With MRP as String):", qrData);
+
+// // Make API request to generate & print QR code
+// generateQRImage(qrData.ean_code, qrData.batch, qrData.mrp, qrData.exp_date, qrData.mfg_date, qrData.to_print)
+// .then((response) => {
+//   console.log("QR Code Successfully Generated and Sent to Printer:", response.data);
+// })
+// .catch((error) => {
+//   console.error("QR Code Generation Failed:", error);
+// });
+
+// };
+
+
+
+const handleGenerateQR = (result) => {
+  console.log("QR Code Generation Data:", result);
+
+  // Ensure result has the necessary fields before calling API
+  if (!result.barcode || !result.batchNo) {
+    console.error("Error: Missing required QR code data fields!", result);
+    return;
+  }
+
+  // Prepare data in the format expected by the Python backend
+  const updatedQRData = {
+    ean_code: result.barcode, // Required
+    batch: result.batchNo, // Required
+    mrp: result.mrp ? String(result.mrp) : null, // Optional
+    exp_date: result.expDate || null, // Optional
+    mfg_date: result.mfgDate || null, // Optional
+    to_print: true, // Ensure the QR code is printed
+  };
+
+  // Update state correctly
+  setqrData(updatedQRData);
+
+  console.log("Formatted QR Data (With MRP as String):", updatedQRData);
+
+  // Make API request to generate & print QR code
+  generateQRImage(
+    updatedQRData.ean_code,
+    updatedQRData.batch,
+    updatedQRData.mrp,
+    updatedQRData.exp_date,
+    updatedQRData.mfg_date,
+    updatedQRData.to_print
+  )
+    .then((response) => {
+      console.log("QR Code Successfully Generated and Sent to Printer:", response.data);
+    })
+    .catch((error) => {
+      console.error("QR Code Generation Failed:", error);
+    });
+};
+
+  // const sock = io("http://localhost:5000"); // Update with your backend URL
+
+
+  // useEffect(() => {
+  //   // Listen for temperature updates
+  //   sock.on("updateTemperature", (data) => {
+  //     setTemperature(data.cpu_temperature);
+  //     if (data.cpu_temperature > 65) {
+  //       setShowPopup(true);
+  //     }
+  //   });
+
+  //   // Cleanup function to avoid memory leaks
+  //   return () => {
+  //     sock.off("updateTemperature");
+  //   };
+  // }, []);
   // Function to open the delete dialog
   const handleOpenDeleteDialog = (index) => {
     setRowToDelete(index);
@@ -83,13 +244,22 @@ export default function Home2() {
     }
   };
 
-
+  const handleRunHealthCheck = async () => {
+    try {
+      const response = await axios.get("http://localhost:5000/api/run_health_check");
+      console.log("Health check response: ", response.data.message);
+      
+    } catch (error) {
+      console.error("Error running health check:", error);
+      
+    }
+  };
   const handleRestart = async () => {
     setSrc("")
     try {
       console.log("Restarting...");
       // Perform any necessary actions here
-      console.log("Function called! Page will reload in 10 seconds...");
+      console.log("Function called! Page will reload in 8 seconds...");
 
       // Set a timer to reload the page after 10 seconds
       setTimeout(function () {
@@ -336,6 +506,22 @@ export default function Home2() {
         }
       });
 
+      newSocket.on("health_check_status", (data) => {
+        console.log("Health status:", data.status);
+        setSnackbarConfig({
+          open: true,
+          message: data.status,
+          severity: "success",
+        });
+      });
+
+      newSocket.on("updateTemperature", (data) => {
+        setTemperature(data.cpu_temperature);
+        if (data.cpu_temperature > 65) {
+          setShowPopup(true);
+        }
+      });
+
 
       // Handle product count events
       newSocket.on("product_count", (data) => {
@@ -344,11 +530,11 @@ export default function Home2() {
         // Show snackbar if status is "error"
         // if (data.status === "error") {
         const message = data + " products detected. Keep a Single Product"
-          setSnackbarConfig({
-            open: true,
-            message: message,
-            severity: "error",
-          });
+        setSnackbarConfig({
+          open: true,
+          message: message,
+          severity: "error",
+        });
         // }
       });
 
@@ -583,7 +769,51 @@ export default function Home2() {
         className={`w-full flex flex-col justify-center items-center p-0 font-sans ${anchorEl ? `backdrop-blur-xl opacity-20 bg-gray-300` : ``
           }`}
       >
-        <div className="w-full flex justify-between">
+       <div>
+  {/* <h1>CPU Temperature: {temperature !== null ? `${temperature}°C` : "Loading..."}</h1> */}
+  {showPopup && (
+    <div style={{
+      position: "fixed",
+      top: "10px", // Adjusted to top
+      left: "50%",
+      transform: "translateX(-50%)",
+      backgroundColor: "red",
+      color: "white",
+      padding: "20px",
+      borderRadius: "10px",
+      boxShadow: "0 0 10px rgba(0, 0, 0, 0.5)",
+      zIndex: 1000
+    }}>
+      <h2>Warning!</h2>
+      <p>CPU temperature has exceeded 65°C!</p>
+      <button onClick={() => setShowPopup(false)}>Close</button>
+    </div>
+  )}
+</div>
+
+
+        {/* ✅ Walkthrough Button */}
+        <div className="w-full flex justify-end p-4 space-x-4">
+    <Button
+        id="start-walkthrough"
+        variant="contained"
+        color="primary"
+        onClick={startTour}
+    >
+        Start Walkthrough
+    </Button>
+
+    <Button
+        id="health-check-button"
+        variant="contained"
+        color="secondary"
+        onClick={handleRunHealthCheck}
+    >
+        Run Health Check
+    </Button>
+</div>;
+
+        {/* <div className="w-full flex justify-between">
           <div className="flex">
           </div>
           <Popover
@@ -610,7 +840,7 @@ export default function Home2() {
               </Button>
             </div>
           </Popover>
-        </div>
+        </div> */}
         <div className="flex w-[100vw] h-[100vh] m-4 rounded-lg gap-3 justify-center flex-wrap">
           <Grid
             container
@@ -623,46 +853,76 @@ export default function Home2() {
               md={6}
               className=""
             >
-              <div id="container" className="">
+              <div id="video-container" className="relative w-full">
                 {!src ? (
                   <Paper elevation={4} className="w-[100%] h-[700px] relative p-5 flex items-center justify-center">
-                  <CircularProgress 
-                    size={60}
-                    thickness={4}
-                    style={{
-                      color: '#1976d2', // You can change this to match your theme color
-                    }}
-                  />
-                </Paper>
+                    <CircularProgress
+                      size={60}
+                      thickness={4}
+                      style={{
+                        color: '#1976d2', // Theme color
+                      }}
+                    />
+                  </Paper>
                 ) : (
                   <>
-                    <Paper elevation={4} className="w-[100%] h-[700px] relative p-5 ">
-                      <img ref={videoRef} src={src} alt="Video Stream" controls
+                    <Paper elevation={4} className="w-[100%] h-[700px] relative p-5">
+                      {/* Video Stream */}
+                      <img
+                        ref={videoRef}
+                        src={src}
+                        alt="Video Stream"
+                        controls
                         className="w-full h-[600px] rounded-lg"
                         onError={() => console.error("Video stream failed to load")}
                       />
-                      <div className="space-x-3" style={{ marginTop: '10px', display: 'flex', alignItems: 'end', justifyContent: 'center' }}>
+
+                      {/* Bottom Control Bar */}
+                      <div className="absolute bottom-4 left-0 w-full flex justify-center">
+                        {/* Restart Button (Centered) */}
                         <Button
-                          variant="contained"
-                          // color="success"
+                          id="restart-button"
                           onClick={handleRestart}
-                          startIcon={<FiRefreshCw />} // Add the icon here
-                          style={{
-                            padding: "10px 20px",
-                            fontSize: "16px",
-                            fontWeight: "bold",
-                            borderRadius: "8px",
-                            textTransform: "none",
-                            boxShadow: "0px 4px 6px rgba(0, 0, 0, 0.1)",
-                          }}
+                          disabled={loading}
+                          className="flex items-center gap-2 h-10 px-6 py-2 text-base font-bold bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-all duration-300 shadow-lg active:scale-95"
                         >
-                          Restart
+                          {loading ? (
+                            <span className="animate-spin font-bold">
+                              <FiRefreshCw className="h-5 w-5 font-bold" />
+                            </span>
+                          ) : (
+                            <FiRefreshCw className="h-5 w-5 font-bold" />
+                          )}
+                          {/* <span className="font-bold">{loading ? "Restarting..." : "Restart"}</span> */}
                         </Button>
                       </div>
+
+                      {/* Temperature Sensor (Bottom Right) */}
+                      <div
+  id="temp-button"
+  className={`absolute bottom-4 right-4 flex items-center justify-center h-10 px-4 py-2 text-xl font-bold bg-white rounded-lg shadow-lg ${
+    temperature !== null
+      ? temperature <= 30
+        ? "text-green-500"
+        : temperature <= 60
+        ? "text-yellow-500"
+        : "text-red-500"
+      : "text-gray-500"
+  }`}
+>
+  <span>
+    🌡️ {temperature !== null ? `${temperature}°C` : "Loading..."}
+  </span>
+</div>
+
                     </Paper>
                   </>
                 )}
               </div>
+
+
+
+
             </Grid>
             <Grid
               item
@@ -676,6 +936,7 @@ export default function Home2() {
 
               >
                 <TableContainer
+                  id="data-table"
                   className="w-auto max-w-[98%] shadow-lg rounded-lg overflow-hidden"
                   component={Paper}
                   sx={{
@@ -684,150 +945,103 @@ export default function Home2() {
                   }}
                 >
                   <Table aria-label="product table">
-                    <TableHead>
-                      <TableRow sx={{ bgcolor: "#06B6D4" }}>
-                        <TableCell
-                          align="center"
-                          sx={{
-                            color: "white",
-                            fontWeight: "bold",
-                            fontSize: "1.5rem",
-                          }}
-                        >
-                          EAN
-                        </TableCell>
-                        <TableCell
-                          align="center"
-                          sx={{
-                            color: "white",
-                            fontWeight: "bold",
-                            fontSize: "1.5rem",
-                          }}
-                        >
-                          Batch No
-                        </TableCell>
-                        <TableCell
-                          align="center"
-                          sx={{
-                            color: "white",
-                            fontWeight: "bold",
-                            fontSize: "1.5rem",
-                          }}
-                        >
-                          {/* Length&nbsp;(mm) */}
-                          MRP
-                        </TableCell>
-                        <TableCell
-                          align="center"
-                          sx={{
-                            color: "white",
-                            fontWeight: "bold",
-                            fontSize: "1.5rem",
-                          }}
-                        >
-                          {/* Breadth&nbsp;(mm) */}
-                          MFG
-                        </TableCell>
-                        <TableCell
-                          align="center"
-                          sx={{
-                            color: "white",
-                            fontWeight: "bold",
-                            fontSize: "1.5rem",
-                          }}
-                        >
-                          EXP
-                        </TableCell>
-                        <TableCell
-                          align="center"
-                          sx={{
-                            color: "white",
-                            fontWeight: "bold",
-                            fontSize: "1.5rem",
-                          }}
-                        >
-                          {/* EXP */}
-                        </TableCell>
+  <TableHead>
+    <TableRow sx={{ bgcolor: "#06B6D4" }}>
+      {/* <TableCell align="center" sx={{ color: "white", fontWeight: "bold", fontSize: "1.5rem" }}> */}
+        {/* QR
+      </TableCell> */}
+      <TableCell align="center" sx={{ color: "white", fontWeight: "bold", fontSize: "1.5rem" }}>
+        EAN
+      </TableCell>
+      <TableCell align="center" sx={{ color: "white", fontWeight: "bold", fontSize: "1.5rem" }}>
+        Batch No
+      </TableCell>
+      <TableCell align="center" sx={{ color: "white", fontWeight: "bold", fontSize: "1.5rem" }}>
+        MRP
+      </TableCell>
+      <TableCell align="center" sx={{ color: "white", fontWeight: "bold", fontSize: "1.5rem" }}>
+        MFG
+      </TableCell>
+      <TableCell align="center" sx={{ color: "white", fontWeight: "bold", fontSize: "1.5rem" }}>
+        EXP
+      </TableCell>
+      <TableCell align="center" sx={{ color: "white", fontWeight: "bold", fontSize: "1.5rem" }}>
+      </TableCell>
+    </TableRow>
+  </TableHead>
+  <TableBody>
+    {tableData &&
+      tableData.map((result, index) => (
+        <>
+        <TableRow
+          key={index}
+          onMouseEnter={() => setSelectedRow(index)}
+          onMouseLeave={() => setSelectedRow(null)}
+          sx={{
+            "&:last-child td, &:last-child th": { border: 0 },
+            "&:nth-of-type(odd)": { backgroundColor: "#f5f5f5" },
+            "&:hover": { backgroundColor: "#e3f2fd" },
+          }}
+        >
+          {/* <TableCell align="center" sx={{ fontSize: "1.5rem" }}>
+            <IconButton disabled={!result.batchNo} onClick={() => 
+              setOpenQRmodal(true)
+            }>
+              <QrCodeIcon  />
+            </IconButton>
+          </TableCell> */}
+          <TableCell align="center" sx={{ fontSize: "1.5rem" }}>
+            {result?.barcode}
+          </TableCell>
+          <TableCell align="center" sx={{ fontSize: "1.5rem" }}>
+            {result?.batchNo}
+          </TableCell>
+          <TableCell align="center" sx={{ fontSize: "1.5rem" }}>
+            {result?.mrp}
+          </TableCell>
+          <TableCell align="center" sx={{ fontSize: "1.5rem" }}>
+            {result?.mfgDate}
+          </TableCell>
+          <TableCell align="center" sx={{ fontSize: "1.5rem" }}>
+            {result?.expDate}
+          </TableCell>
+          <TableCell align="center" sx={{ fontSize: "1.5rem" }}>
+            {selectedRow === index && (
+              <>
+                <IconButton onClick={() => handleRowClick(result)} aria-label="edit">
+                  <EditIcon />
+                </IconButton>
+                <IconButton onClick={() => handleOpenDeleteDialog(index)} aria-label="delete">
+                  <DeleteIcon />
+                </IconButton>
+              </>
+            )}
+          </TableCell>
+        </TableRow>
+            <Dialog open={openQRmodal} onClose={() => setOpenQRmodal(false)}>
+            <DialogTitle>Generate QR Code</DialogTitle>
+            <DialogContent>Do you want to generate and print the QR code?</DialogContent>
+            <DialogActions>
+              <Button onClick={() => setOpenQRmodal(false)} color="secondary">
+                No
+              </Button>
+              <Button
+                onClick={() => {
+                  handleGenerateQR(result);
+                  setOpenQRmodal(false);
+                }}
+                color="primary"
+                variant="contained"
+              >
+                Yes
+              </Button>
+            </DialogActions>
+          </Dialog>
+          </>
+      ))}
+  </TableBody>
+</Table>
 
-                      </TableRow>
-                    </TableHead>
-                    <TableBody>
-                      {tableData &&
-                        tableData.map((result, index) => (
-                          <TableRow
-                            key={index}
-                            // onClick={() => handleRowClick(result)}
-                            onMouseEnter={() => setSelectedRow(index)}
-                            onMouseLeave={() => setSelectedRow(null)}
-                            sx={{
-                              "&:last-child td, &:last-child th": {
-                                border: 0,
-                              },
-                              "&:nth-of-type(odd)": {
-                                backgroundColor: "#f5f5f5",
-                              },
-                              "&:hover": { backgroundColor: "#e3f2fd" },
-                            }}
-                          >
-                            <TableCell
-                              component="th"
-                              scope="row"
-                              align="center"
-                              sx={{ fontSize: "1.5rem" }}
-                            >
-                              {result?.barcode}
-                            </TableCell>
-                            <TableCell
-                              component="th"
-                              scope="row"
-                              align="center"
-                              sx={{ fontSize: "1.5rem" }}
-                            >
-                              {result?.batchNo}
-                            </TableCell>
-                            <TableCell
-                              align="center"
-                              sx={{ fontSize: "1.5rem" }}
-                            >
-                              {result?.mrp}
-                            </TableCell>
-                            <TableCell
-                              align="center"
-                              sx={{ fontSize: "1.5rem" }}
-                            >
-                              {result?.mfgDate}
-                            </TableCell>
-                            <TableCell
-                              align="center"
-                              sx={{ fontSize: "1.5rem" }}
-                            >
-                              {result?.expDate}
-                            </TableCell>
-                            <TableCell align="center" sx={{ fontSize: "1.5rem" }}>
-                              {selectedRow === index && (
-                                <>
-                                  <IconButton
-                                    onClick={() => handleRowClick(result)}
-                                    aria-label="edit"
-                                  >
-                                    <EditIcon />
-                                  </IconButton>
-                                  <IconButton
-                                    onClick={() => {
-                                      // handleDeleteRow(index);
-                                      handleOpenDeleteDialog(index)
-                                    }}
-                                    aria-label="delete"
-                                  >
-                                    <DeleteIcon />
-                                  </IconButton>
-                                </>
-                              )}
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                    </TableBody>
-                  </Table>
                 </TableContainer>
 
                 {/* Dialog for editing */}
@@ -913,7 +1127,9 @@ export default function Home2() {
                 </Dialog>
               </div>
             </Grid>
-            <WorkflowStatus statusUpdates={statusUpdates} />
+            <div id="workflow-status">
+              <WorkflowStatus statusUpdates={statusUpdates} />
+            </div>
           </Grid>
           {/* </div> */}
         </div>
@@ -934,6 +1150,7 @@ export default function Home2() {
           {snackbarConfig.message}
         </Alert>
       </Snackbar>
+
     </>
   );
 }

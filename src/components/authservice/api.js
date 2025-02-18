@@ -5,7 +5,80 @@ const localUrl = "http://localhost:8080";
 // const infer_localUrl= 'http://localhost:9990'; 8249!
 const infer_localUrl = "http://192.168.1.25:9990";
 const url = "http://localhost:8080";
+const db_url = "http://127.0.0.1:8000";
+
 // API INTEGRATION OFR LOGIN
+// export const User_Register = async (body) => {
+//   try {
+//     const res = await axios.post(
+//       `${db_url}/register`,
+//       body,  // Send the body directly as JSON
+//       {
+//         headers: {
+//           'Content-Type': 'application/json'  // Changed to JSON content type
+//         },
+//       }
+//     );
+//     return {
+//       success: true,
+//       data: res.data
+//     };
+//   } catch (error) {
+//     console.log("Error Calling User Register API: ", error);
+//     return {
+//       success: false,
+//       message: error.response?.data?.detail || 'Registration failed'
+//     };
+//   }
+// }
+
+export const User_Login = async (body) => {
+  try {
+    const res = await axios.post(
+      `${db_url}/login`,
+      body,  // Send the body directly as JSON
+      {
+        headers: {
+          'Content-Type': 'application/json'  // Changed to JSON content type
+        },
+      }
+    );
+    return {
+      success: true,
+      data: res.data
+    };
+  } catch (error) {
+    console.log("Error Calling User Login API: ", error);
+    return {
+      success: false,
+      message: error.response?.data?.detail || 'Login failed'
+    };
+  }
+}
+
+
+export const User_Logout = async () => {
+  try {
+    const res = await axios.post(
+      `${db_url}/logout`,
+      {
+        headers: {
+          'Content-Type': 'application/json'  // Changed to JSON content type
+        },
+      }
+    );
+    return {
+      success: true,
+      data: res.data
+    };
+  } catch (error) {
+    console.log("Error Calling User Logout API: ", error);
+    return {
+      success: false,
+      message: error.response?.data?.detail || 'Logout failed'
+    };
+  }
+}
 
 export const RESET_TO_DEFAULT_ENV_CONFS = async (path) => {
   try {
@@ -226,13 +299,30 @@ export const enable_autocapture = async (enable) => {
 
 export const updateMetadata = async (metadata_id, updatedData) => {
   try {
-    const response = await axios.post('http://192.168.29.129:4040/update_data', {
+    const response = await axios.post('http://192.168.29.216:4040/update_data', {
       metadata_id: metadata_id,
       key_value: updatedData
     });
     return response;
   } catch (error) {
     console.error("Error updating metadata:", error);
+    throw error;
+  }
+};
+
+export const generateQRImage = async (ean_code, batch, mrp, exp_date, mfg_date, to_print) => {
+  try {
+    const response = await axios.post('http://192.168.29.216:4040/generate_qrimage', {
+      ean_code: ean_code,
+      batch: batch,
+      mrp: mrp,
+      exp_date: exp_date,
+      mfg_date: mfg_date,
+      to_print: to_print
+    });
+    return response;
+  } catch (error) {
+    console.error("Error generating QR code:", error);
     throw error;
   }
 };
