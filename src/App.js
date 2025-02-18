@@ -20,7 +20,8 @@ function App() {
           {/* <Route path="/dashboard" element={<DashboardNew/>}/> */}
           {/* <Route path="/dashboard" element={<DashboardNew />} />*/}
           <Route path="/volumetric" element={<Volumetric />} />
-          <Route path="/home" element={<Homepage />} />
+          {/* <Route path="/home" element={<Homepage />} /> */}
+          <Route path="/" element={<Homepage />} />
 
           <Route path="/settings" element={<Settings />} />
         </Routes>
