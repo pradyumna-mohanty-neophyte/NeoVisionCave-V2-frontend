@@ -264,7 +264,7 @@ const handleGenerateQR = (result) => {
       // Set a timer to reload the page after 10 seconds
       setTimeout(function () {
         window.location.reload();
-      }, 8000); // 8000 milliseconds 
+      }, 10000); // 10 seconds 
 
       // Make the API request to the Node.js backend
       const response = await axios.get(

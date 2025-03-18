@@ -299,7 +299,7 @@ export const enable_autocapture = async (enable) => {
 
 export const updateMetadata = async (metadata_id, updatedData) => {
   try {
-    const response = await axios.post('http://192.168.29.216:4040/update_data', {
+    const response = await axios.post('http://192.168.29.16:4040/update_data', {
       metadata_id: metadata_id,
       key_value: updatedData
     });
@@ -312,7 +312,7 @@ export const updateMetadata = async (metadata_id, updatedData) => {
 
 export const generateQRImage = async (ean_code, batch, mrp, exp_date, mfg_date, to_print) => {
   try {
-    const response = await axios.post('http://192.168.29.216:4040/generate_qrimage', {
+    const response = await axios.post('http://192.168.29.16:4040/generate_qrimage', {
       ean_code: ean_code,
       batch: batch,
       mrp: mrp,

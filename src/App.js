@@ -13,7 +13,7 @@ function App() {
     <div className="w-full ">
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<AuthPages />} />
+          {/* <Route path="/" element={<AuthPages />} /> */}
           {/* <Route path="/" element={<NewLogin />} /> */}
           {/* <Route path="/" element={<ChangedLogin />} /> */}
           {/* <Route path="/dashboard" element={<Dashboard/>}/> */}
