@@ -1099,7 +1099,10 @@ const handleGenerateQR = (result) => {
                     <Button onClick={handleCloseDialog} color="secondary">
                       Cancel
                     </Button>
-                    <Button onClick={handleOpenConfirmDialog} color="primary">
+                    <Button 
+                    // onClick={handleOpenConfirmDialog} 
+                    onClick={handleSaveChanges}
+                    color="primary">
                       Save
                     </Button>
                   </DialogActions>
@@ -1142,7 +1145,7 @@ const handleGenerateQR = (result) => {
 
 
       <Snackbar
-        anchorOrigin={{ vertical: "top", horizontal: "right" }}
+        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
         open={snackbarConfig.open}
         autoHideDuration={6000}
         onClose={() => setSnackbarConfig({ ...snackbarConfig, open: false })}
