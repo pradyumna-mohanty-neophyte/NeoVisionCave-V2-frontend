@@ -1007,16 +1007,20 @@ const handleGenerateQR = (result) => {
             {result?.expDate}
           </TableCell>
           <TableCell align="center" sx={{ fontSize: "1.5rem" }}>
-            {selectedRow === index && (
-              <>
-                <IconButton onClick={() => handleRowClick(result)} aria-label="edit">
-                  <EditIcon />
-                </IconButton>
-                <IconButton onClick={() => handleOpenDeleteDialog(index)} aria-label="delete">
-                  <DeleteIcon />
-                </IconButton>
-              </>
-            )}
+            <IconButton 
+              onClick={() => handleRowClick(result)} 
+              aria-label="edit"
+              sx={{ color: selectedRow === index ? '#1976d2' : 'action.disabled' }}
+            >
+              <EditIcon />
+            </IconButton>
+            <IconButton 
+              onClick={() => handleOpenDeleteDialog(index)} 
+              aria-label="delete"
+              sx={{ color: selectedRow === index ? '#d32f2f' : 'action.disabled' }}
+            >
+              <DeleteIcon />
+            </IconButton>
           </TableCell>
         </TableRow>
             <Dialog open={openQRmodal} onClose={() => setOpenQRmodal(false)}>
