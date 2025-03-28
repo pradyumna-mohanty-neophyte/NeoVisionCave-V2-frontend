@@ -217,12 +217,12 @@ const WorkflowStatus = ({ statusUpdates }) => {
   }, [statusUpdates]);
 
   return (
-    <div className="w-screen p-8 bg-gray-50">
+    <div className="w-screen p-8">
       <div className="flex justify-between items-center relative">
         {steps.map((step, index) => (
           <div key={step.id} className="flex flex-col items-center w-1/4 relative">
             {index < steps.length - 1 && (
-              <div className="absolute h-2 w-full top-10 left-1/2">
+              <div className="absolute h-2 w-full top-5 left-1/2">
                 <div
                   className={`h-full`}
                   style={{
@@ -234,7 +234,7 @@ const WorkflowStatus = ({ statusUpdates }) => {
             )}
 
             <div
-              className="relative z-10 w-20 h-20 rounded-full flex items-center justify-center 
+              className="relative z-10 size-12 rounded-full flex items-center justify-center 
                 transition-all duration-500"
               style={{
                 backgroundColor: getStepColor(index, currentStep, completedStep),
@@ -242,7 +242,7 @@ const WorkflowStatus = ({ statusUpdates }) => {
                 color: getStepColor(index, currentStep, completedStep),
               }}
             >
-              <step.icon className="w-10 h-10 text-white" />
+              <step.icon className="size-6 text-white" />
             </div>
 
             <span
@@ -254,7 +254,7 @@ const WorkflowStatus = ({ statusUpdates }) => {
 
             {currentStep === index && (
               <div
-                className="absolute z-0 w-20 h-20 rounded-full animate-ping opacity-25"
+                className="absolute z-0 size-12 rounded-full animate-ping opacity-25"
                 style={{ backgroundColor: getStepColor(index, currentStep, completedStep) }}
               />
             )}

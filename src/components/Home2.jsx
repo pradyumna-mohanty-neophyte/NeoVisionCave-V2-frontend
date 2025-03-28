@@ -793,7 +793,7 @@ const handleGenerateQR = (result) => {
 
 
         {/* ✅ Walkthrough Button */}
-        <div className="w-full flex justify-end p-4 space-x-4">
+        <div className="w-full flex -mt-16 z-50 justify-end p-4 space-x-4">
     <Button
         id="start-walkthrough"
         variant="contained"
@@ -841,7 +841,7 @@ const handleGenerateQR = (result) => {
             </div>
           </Popover>
         </div> */}
-        <div className="flex w-[100vw] h-[100vh] m-4 rounded-lg gap-3 justify-center flex-wrap">
+        <div className="flex w-[100vw] m-4 -mt-3 rounded-lg gap-3 justify-center flex-wrap">
           <Grid
             container
             spacing={2}
@@ -966,6 +966,7 @@ const handleGenerateQR = (result) => {
         EXP
       </TableCell>
       <TableCell align="center" sx={{ color: "white", fontWeight: "bold", fontSize: "1.5rem" }}>
+        Action
       </TableCell>
     </TableRow>
   </TableHead>

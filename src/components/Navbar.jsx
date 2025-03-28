@@ -8,11 +8,11 @@ function Navbar() {
   
 
   return (
-    <div className="flex items-center justify-between py-2 px-8 shadow-xl">
+    <div className="flex items-center justify-between py-0 px-8 shadow-xl">
       {/* Logo & Temperature Container */}
       <div className="flex items-center space-x-4">
         {/* Neophyte Logo */}
-        <img src={logo} alt="Neophyte Logo" className="h-20 w-auto" />
+        <img src={logo} alt="Neophyte Logo" className="h-16 w-auto" />
 
         
       </div>

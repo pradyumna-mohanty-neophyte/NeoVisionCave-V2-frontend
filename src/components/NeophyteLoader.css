@@ -1,0 +1,62 @@
+.loader-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background-color: #f7f7f7;
+    position: relative;
+    overflow: hidden;
+}
+
+.loader {
+    width: 99.5px;
+    height: 99.5px;
+    background-image: url('/public/images/neo_favicon.png');
+    background-size: contain;
+    background-repeat: no-repeat;
+    position: absolute;
+    animation: rotateAndShiftLinear 5.1s forwards linear; 
+}
+
+@keyframes rotateAndShiftLinear {
+    0% {
+        transform: rotate(0deg) translateX(0);
+        opacity: 1;
+    }
+    50% {
+        transform: rotate(360deg) translateX(0);
+        opacity: 1;
+    }
+    80% {
+        transform: rotate(360deg) translateX(-131%);
+        opacity: 1;
+    }
+    100% {
+        transform: rotate(360deg) translateX(-131%);
+        opacity: 0;
+    }
+}
+
+.logo {
+    width: 800px;
+    height: auto;
+    position: relative;
+    opacity: 0;
+    animation: logoAppear 3s 4s forwards;
+}
+
+@keyframes logoAppear {
+    0% {
+        opacity: 0;
+        transform: scale(1);
+    }
+    60% {
+        opacity: 0.6;
+        transform: scale(1);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
