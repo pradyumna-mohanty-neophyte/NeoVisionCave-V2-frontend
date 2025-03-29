@@ -12,6 +12,8 @@ import ToggleButton from 'react-toggle-button'
 // import * as XLSX from 'xlsx';
 import introJs from "intro.js";
 import QrCodeIcon from "@mui/icons-material/QrCode";
+import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
+import HealthAndSafetyIcon from "@mui/icons-material/HealthAndSafety";
 
 
 import "intro.js/minified/introjs.min.css"; // Import Intro.js styles
@@ -809,26 +811,82 @@ const handleGenerateQR = (result) => {
 </div>
 
 
-        {/* ✅ Walkthrough Button */}
+        {/* ✅ Action Buttons */}
         <div className="w-full flex -mt-16 z-50 justify-end p-4 space-x-4">
-    <Button
-        id="start-walkthrough"
-        variant="contained"
-        color="primary"
-        onClick={startTour}
-    >
-        Start Walkthrough
-    </Button>
+          <Button
+            id="start-walkthrough"
+            variant="contained"
+            color="primary"
+            onClick={startTour}
+            startIcon={<HelpOutlineIcon />}
+          >
+            Start Walkthrough
+          </Button>
 
-    <Button
-        id="health-check-button"
-        variant="contained"
-        color="secondary"
-        onClick={handleRunHealthCheck}
-    >
-        Run Health Check
-    </Button>
-</div>;
+          <Button
+            id="health-check-button"
+            variant="contained"
+            color="secondary"
+            onClick={handleRunHealthCheck}
+            startIcon={<HealthAndSafetyIcon />}
+          >
+            Run Health Check
+          </Button>
+
+          <Button
+            id="download-csv-button"
+            variant="contained"
+            color="success"
+            disabled={!tableData || tableData.length === 0}
+            onClick={() => {
+              if (!tableData || tableData.length === 0) {
+                setSnackbarConfig({
+                  open: true,
+                  message: 'No data available to download',
+                  severity: 'warning'
+                });
+                return;
+              }
+              
+              // Convert table data to CSV format
+              const headers = ['EAN', 'Batch No', 'MRP', 'MFG Date', 'EXP Date'];
+              const csvData = tableData.map(row => [
+                row.barcode,
+                row.batchNo,
+                row.mrp,
+                row.mfgDate,
+                row.expDate
+              ]);
+              
+              // Create CSV content
+              const csvContent = [
+                headers.join(','),
+                ...csvData.map(row => row.join(','))
+              ].join('\n');
+              
+              // Create blob and download
+              const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+              const link = document.createElement('a');
+              const url = URL.createObjectURL(blob);
+              link.setAttribute('href', url);
+              link.setAttribute('download', `table_data_${new Date().toISOString().split('T')[0]}.csv`);
+              document.body.appendChild(link);
+              link.click();
+              document.body.removeChild(link);
+              
+              // Show success message
+              setSnackbarConfig({
+                open: true,
+                message: 'CSV file downloaded successfully',
+                severity: 'success'
+              });
+            }}
+            startIcon={<DownloadIcon />}
+            title={!tableData || tableData.length === 0 ? 'No data available to download' : 'Download table data as CSV'}
+          >
+            Download CSV
+          </Button>
+        </div>
 
         {/* <div className="w-full flex justify-between">
           <div className="flex">
@@ -858,7 +916,7 @@ const handleGenerateQR = (result) => {
             </div>
           </Popover>
         </div> */}
-        <div className="flex w-[100vw] m-4 -mt-3 rounded-lg gap-3 justify-center flex-wrap">
+        <div className="flex w-[100vw] m-4 rounded-lg gap-3 justify-center flex-wrap">
           <Grid
             container
             spacing={2}
@@ -1100,50 +1158,65 @@ const handleGenerateQR = (result) => {
                         margin="dense"
                         label="EAN"
                         name="barcode"
-                        value={editedData.barcode || ""}
+                        value={editedData.barcode ?? ""}
                         onChange={handleChange}
                         fullWidth
                         disabled
                         autoFocus={false}
+                        inputProps={{
+                          spellCheck: 'false'
+                        }}
                       />
                       <TextField
                         margin="dense"
                         label="Batch No"
                         name="batchNo"
-                        value={editedData.batchNo || ""}
+                        value={editedData.batchNo ?? ""}
                         onChange={handleChange}
                         fullWidth
                         autoFocus={false}
                         onKeyDown={(e) => e.key === 'Enter' && e.preventDefault()}
+                        inputProps={{
+                          spellCheck: 'false'
+                        }}
                       />
                       <TextField
                         margin="dense"
                         label="MRP"
                         name="mrp"
-                        value={editedData.mrp || ""}
+                        value={editedData.mrp ?? ""}
                         onChange={handleChange}
                         fullWidth
                         autoFocus={false}
                         onKeyDown={(e) => e.key === 'Enter' && e.preventDefault()}
+                        inputProps={{
+                          spellCheck: 'false'
+                        }}
                       />
                       <TextField
                         margin="dense"
                         label="MFG Date"
                         name="mfgDate"
-                        value={editedData.mfgDate || ""}
+                        value={editedData.mfgDate ?? ""}
                         onChange={handleChange}
                         fullWidth
                         autoFocus={false}
                         onKeyDown={(e) => e.key === 'Enter' && e.preventDefault()}
+                        inputProps={{
+                          spellCheck: 'false'
+                        }}
                       />
                       <TextField
                         margin="dense"
                         label="EXP Date"
                         name="expDate"
-                        value={editedData.expDate || ""}
+                        value={editedData.expDate ?? ""}
                         onChange={handleChange}
                         fullWidth
                         onKeyDown={(e) => e.key === 'Enter' && e.preventDefault()}
+                        inputProps={{
+                          spellCheck: 'false'
+                        }}
                       />
                     </DialogContent>
                     <DialogActions>
