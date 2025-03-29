@@ -345,6 +345,7 @@ const handleGenerateQR = (result) => {
   };
 
   const handleSaveChanges = async () => {
+    console.log("handleSaveChanges called");
     try {
       setIsLoading(true);
 
@@ -944,28 +945,25 @@ const handleGenerateQR = (result) => {
                     overflowY: 'auto', // Enable vertical scrolling
                   }}
                 >
-                  <Table aria-label="product table">
+                  <Table stickyHeader aria-label="product table">
   <TableHead>
-    <TableRow sx={{ bgcolor: "#06B6D4" }}>
-      {/* <TableCell align="center" sx={{ color: "white", fontWeight: "bold", fontSize: "1.5rem" }}> */}
-        {/* QR
-      </TableCell> */}
-      <TableCell align="center" sx={{ color: "white", fontWeight: "bold", fontSize: "1.5rem" }}>
+    <TableRow>
+      <TableCell align="center" sx={{ backgroundColor: "#06B6D4", color: "white", fontWeight: "bold", fontSize: "1.5rem", position: "sticky", top: 0, zIndex: 1 }}>
         EAN
       </TableCell>
-      <TableCell align="center" sx={{ color: "white", fontWeight: "bold", fontSize: "1.5rem" }}>
+      <TableCell align="center" sx={{ backgroundColor: "#06B6D4", color: "white", fontWeight: "bold", fontSize: "1.5rem", position: "sticky", top: 0, zIndex: 1 }}>
         Batch No
       </TableCell>
-      <TableCell align="center" sx={{ color: "white", fontWeight: "bold", fontSize: "1.5rem" }}>
+      <TableCell align="center" sx={{ backgroundColor: "#06B6D4", color: "white", fontWeight: "bold", fontSize: "1.5rem", position: "sticky", top: 0, zIndex: 1 }}>
         MRP
       </TableCell>
-      <TableCell align="center" sx={{ color: "white", fontWeight: "bold", fontSize: "1.5rem" }}>
+      <TableCell align="center" sx={{ backgroundColor: "#06B6D4", color: "white", fontWeight: "bold", fontSize: "1.5rem", position: "sticky", top: 0, zIndex: 1 }}>
         MFG
       </TableCell>
-      <TableCell align="center" sx={{ color: "white", fontWeight: "bold", fontSize: "1.5rem" }}>
+      <TableCell align="center" sx={{ backgroundColor: "#06B6D4", color: "white", fontWeight: "bold", fontSize: "1.5rem", position: "sticky", top: 0, zIndex: 1 }}>
         EXP
       </TableCell>
-      <TableCell align="center" sx={{ color: "white", fontWeight: "bold", fontSize: "1.5rem" }}>
+      <TableCell align="center" sx={{ backgroundColor: "#06B6D4", color: "white", fontWeight: "bold", fontSize: "1.5rem", position: "sticky", top: 0, zIndex: 1 }}>
         Action
       </TableCell>
     </TableRow>
@@ -1100,9 +1098,10 @@ const handleGenerateQR = (result) => {
                       Cancel
                     </Button>
                     <Button 
-                    // onClick={handleOpenConfirmDialog} 
                     onClick={handleSaveChanges}
-                    color="primary">
+                    color="primary"
+                    type="submit"
+                    >
                       Save
                     </Button>
                   </DialogActions>
