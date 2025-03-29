@@ -325,15 +325,24 @@ const handleGenerateQR = (result) => {
       setIsLoading(false);
     }
   };
+  const resetDialogState = () => {
+    setSelectedRow(null);
+    setEditedData({});
+    setOpenDialog(false);
+    setOpenConfirmDialog(false);
+  };
+
   const handleRowClick = (row) => {
-    setSelectedRow(row);
-    setEditedData(row);
-    setOpenDialog(true);
+    // Only allow editing if the row is not being processed
+    if (!row.isProcessing) {
+      setSelectedRow(row);
+      setEditedData(row);
+      setOpenDialog(true);
+    }
   };
 
   const handleCloseDialog = () => {
-    setOpenDialog(false);
-    setSelectedRow(null);
+    resetDialogState();
   };
 
   const handleOpenConfirmDialog = () => {
@@ -373,29 +382,18 @@ const handleGenerateQR = (result) => {
             batchNo: editedData.batchNo,
             mrp: editedData.mrp,
             mfgDate: editedData.mfgDate,
-            expDate: editedData.expDate
+            expDate: editedData.expDate,
+            lastEdited: true // Mark this row as recently edited
           } : item
         ));
-
-        // setSnackbarConfig({
-        //   open: true,
-        //   message: "Row updated successfully",
-        //   severity: "success",
-        // });
       } else {
         throw new Error("Update failed");
       }
     } catch (error) {
       console.error("Error updating row:", error);
-      // setSnackbarConfig({
-      //   open: true,
-      //   message: "Failed to update row",
-      //   severity: "error",
-      // });
     } finally {
       setIsLoading(false);
-      handleCloseConfirmDialog();
-      handleCloseDialog();
+      resetDialogState(); // Use the centralized reset function
     }
   };
 
@@ -542,15 +540,23 @@ const handleGenerateQR = (result) => {
       // Handle barcode events
       newSocket.on("barcode", (data) => {
         console.log("Received barcode from socket:", data);
-        // Create a new row with the barcode
+        
+        // First, ensure dialog is closed
+        setEditedData({});
+        setSelectedRow(null);
+        setOpenDialog(false);
+        
+        // Then create a new row with the barcode
         const newRow = {
           barcode: data,
           batchNo: null,
           mrp: null,
           mfgDate: null,
           expDate: null,
-          timestamp: new Date().toISOString()
+          timestamp: new Date().toISOString(),
+          isProcessing: true // Add flag to track processing state
         };
+        
         setCurrentRow(newRow);
         setTableData(prevData => [newRow, ...prevData]);
       });
@@ -573,17 +579,18 @@ const handleGenerateQR = (result) => {
           firstRow.mrp = data['mrp'] || firstRow.mrp;
           firstRow.mfgDate = data['mfg_date'] || firstRow.mfgDate;
           firstRow.expDate = data['expiry_date'] || firstRow.expDate;
+          firstRow.isProcessing = false; // Mark processing as complete
 
           updatedData[0] = firstRow;
           return updatedData;
         });
       });
 
-
+      // Handle status updates
       newSocket.on("status-updates", (data) => {
-        // console.log("Received status updates from socket:", data);
-        setStatusUpdates(data); // Store the status updates in state
-      })
+        console.log("Received status update:", data);
+        setStatusUpdates(data);
+      });
 
 
 
@@ -594,6 +601,15 @@ const handleGenerateQR = (result) => {
 
 
   // Call setupSocket once when the component mounts
+  // Effect to manage dialog state during processing
+  useEffect(() => {
+    if (tableData.length > 0 && tableData[0].isProcessing) {
+      setEditedData({});
+      setSelectedRow(null);
+      setOpenDialog(false);
+    }
+  }, [tableData]);
+
   useEffect(() => {
     setupSocket();
   }, []);
@@ -1048,7 +1064,24 @@ const handleGenerateQR = (result) => {
                 </TableContainer>
 
                 {/* Dialog for editing */}
-                <Dialog open={openDialog} onClose={handleCloseDialog} maxWidth="sm" fullWidth>
+                <Dialog 
+                  open={openDialog} 
+                  onClose={handleCloseDialog} 
+                  maxWidth="sm" 
+                  fullWidth
+                  disableAutoFocus
+                  disableEnforceFocus
+                  disableRestoreFocus
+                  keepMounted={false}
+                  onBackdropClick={handleCloseDialog}
+                  TransitionProps={{
+                    onExited: () => {
+                      // Clean up any lingering state when dialog is fully closed
+                      setEditedData({});
+                      setSelectedRow(null);
+                    }
+                  }}
+                >
                   <DialogTitle>Do you want to edit the metadata?</DialogTitle>
                   <DialogContent>
                     <TextField
@@ -1059,6 +1092,7 @@ const handleGenerateQR = (result) => {
                       onChange={handleChange}
                       fullWidth
                       disabled
+                      autoFocus={false}
                     />
                     <TextField
                       margin="dense"
@@ -1067,6 +1101,7 @@ const handleGenerateQR = (result) => {
                       value={editedData.batchNo || ""}
                       onChange={handleChange}
                       fullWidth
+                      autoFocus={false}
                     />
                     <TextField
                       margin="dense"
@@ -1075,6 +1110,7 @@ const handleGenerateQR = (result) => {
                       value={editedData.mrp || ""}
                       onChange={handleChange}
                       fullWidth
+                      autoFocus={false}
                     />
                     <TextField
                       margin="dense"
@@ -1083,6 +1119,7 @@ const handleGenerateQR = (result) => {
                       value={editedData.mfgDate || ""}
                       onChange={handleChange}
                       fullWidth
+                      autoFocus={false}
                     />
                     <TextField
                       margin="dense"
@@ -1144,7 +1181,7 @@ const handleGenerateQR = (result) => {
 
 
       <Snackbar
-        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+        anchorOrigin={{ vertical: "top", horizontal: "center" }}
         open={snackbarConfig.open}
         autoHideDuration={6000}
         onClose={() => setSnackbarConfig({ ...snackbarConfig, open: false })}
