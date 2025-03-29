@@ -1082,66 +1082,82 @@ const handleGenerateQR = (result) => {
                     }
                   }}
                 >
-                  <DialogTitle>Do you want to edit the metadata?</DialogTitle>
-                  <DialogContent>
-                    <TextField
-                      margin="dense"
-                      label="EAN"
-                      name="barcode"
-                      value={editedData.barcode || ""}
-                      onChange={handleChange}
-                      fullWidth
-                      disabled
-                      autoFocus={false}
-                    />
-                    <TextField
-                      margin="dense"
-                      label="Batch No"
-                      name="batchNo"
-                      value={editedData.batchNo || ""}
-                      onChange={handleChange}
-                      fullWidth
-                      autoFocus={false}
-                    />
-                    <TextField
-                      margin="dense"
-                      label="MRP"
-                      name="mrp"
-                      value={editedData.mrp || ""}
-                      onChange={handleChange}
-                      fullWidth
-                      autoFocus={false}
-                    />
-                    <TextField
-                      margin="dense"
-                      label="MFG Date"
-                      name="mfgDate"
-                      value={editedData.mfgDate || ""}
-                      onChange={handleChange}
-                      fullWidth
-                      autoFocus={false}
-                    />
-                    <TextField
-                      margin="dense"
-                      label="EXP Date"
-                      name="expDate"
-                      value={editedData.expDate || ""}
-                      onChange={handleChange}
-                      fullWidth
-                    />
-                  </DialogContent>
-                  <DialogActions>
-                    <Button onClick={handleCloseDialog} color="secondary">
-                      Cancel
-                    </Button>
-                    <Button 
-                    onClick={handleSaveChanges}
-                    color="primary"
-                    type="submit"
-                    >
-                      Save
-                    </Button>
-                  </DialogActions>
+                  <form 
+                    onSubmit={(e) => {
+                      e.preventDefault();
+                      handleSaveChanges();
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        handleSaveChanges();
+                      }
+                    }}
+                  >
+                    <DialogTitle>Do you want to edit the metadata?</DialogTitle>
+                    <DialogContent>
+                      <TextField
+                        margin="dense"
+                        label="EAN"
+                        name="barcode"
+                        value={editedData.barcode || ""}
+                        onChange={handleChange}
+                        fullWidth
+                        disabled
+                        autoFocus={false}
+                      />
+                      <TextField
+                        margin="dense"
+                        label="Batch No"
+                        name="batchNo"
+                        value={editedData.batchNo || ""}
+                        onChange={handleChange}
+                        fullWidth
+                        autoFocus={false}
+                        onKeyDown={(e) => e.key === 'Enter' && e.preventDefault()}
+                      />
+                      <TextField
+                        margin="dense"
+                        label="MRP"
+                        name="mrp"
+                        value={editedData.mrp || ""}
+                        onChange={handleChange}
+                        fullWidth
+                        autoFocus={false}
+                        onKeyDown={(e) => e.key === 'Enter' && e.preventDefault()}
+                      />
+                      <TextField
+                        margin="dense"
+                        label="MFG Date"
+                        name="mfgDate"
+                        value={editedData.mfgDate || ""}
+                        onChange={handleChange}
+                        fullWidth
+                        autoFocus={false}
+                        onKeyDown={(e) => e.key === 'Enter' && e.preventDefault()}
+                      />
+                      <TextField
+                        margin="dense"
+                        label="EXP Date"
+                        name="expDate"
+                        value={editedData.expDate || ""}
+                        onChange={handleChange}
+                        fullWidth
+                        onKeyDown={(e) => e.key === 'Enter' && e.preventDefault()}
+                      />
+                    </DialogContent>
+                    <DialogActions>
+                      <Button onClick={handleCloseDialog} color="secondary">
+                        Cancel
+                      </Button>
+                      <Button 
+                        type="submit"
+                        color="primary"
+                      >
+                        Save
+                      </Button>
+                    </DialogActions>
+                  </form>
                 </Dialog>
 
                 {/* Delete Confirmation Dialog */}
