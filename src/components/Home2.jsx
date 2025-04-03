@@ -57,6 +57,9 @@ import logo from "./image/logo.jpeg";
 import WorkflowStatus from "./WorkflowStatus";
 export default function Home2() {
   const [src, setSrc] = useState("http://localhost:8000/video")
+  const lastKeyTime = useRef(0);
+  const keyBuffer = useRef('');
+  const BARCODE_SCAN_TIMEOUT = 50; // Time in ms to consider rapid keypresses as barcode scanner
   // const src = "http://localhost:8000/video";
   const [socket, setSocket] = useState(null);
   const [product, setproduct] = useState(null);
@@ -611,6 +614,39 @@ const handleGenerateQR = (result) => {
       setOpenDialog(false);
     }
   }, [tableData]);
+
+  useEffect(() => {
+    // Add barcode scanner detection
+    const handleKeyPress = (e) => {
+      const currentTime = new Date().getTime();
+      const timeDiff = currentTime - lastKeyTime.current;
+      
+      // If the time between keypresses is very short, likely a barcode scanner
+      if (timeDiff < BARCODE_SCAN_TIMEOUT) {
+        keyBuffer.current += e.key;
+      } else {
+        keyBuffer.current = e.key;
+      }
+      
+      lastKeyTime.current = currentTime;
+      
+      // If Enter key is pressed and we have collected some characters
+      if (e.key === 'Enter' && keyBuffer.current.length > 1) {
+        // Clear focus from any active element
+        if (document.activeElement instanceof HTMLElement) {
+          document.activeElement.blur();
+        }
+        keyBuffer.current = ''; // Reset the buffer
+      }
+    };
+
+    window.addEventListener('keypress', handleKeyPress);
+    
+    // Cleanup
+    return () => {
+      window.removeEventListener('keypress', handleKeyPress);
+    };
+  }, []);
 
   useEffect(() => {
     setupSocket();
