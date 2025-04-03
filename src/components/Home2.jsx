@@ -1099,22 +1099,22 @@ const handleGenerateQR = (result) => {
               <QrCodeIcon  />
             </IconButton>
           </TableCell> */}
-          <TableCell align="center" sx={{ fontSize: "1.5rem" }}>
+          <TableCell align="center" sx={{ fontSize: "1.3rem" }}>
             {result?.barcode}
           </TableCell>
-          <TableCell align="center" sx={{ fontSize: "1.5rem" }}>
+          <TableCell align="center" sx={{ fontSize: "1.3rem" }}>
             {result?.batchNo}
           </TableCell>
-          <TableCell align="center" sx={{ fontSize: "1.5rem" }}>
+          <TableCell align="center" sx={{ fontSize: "1.3rem" }}>
             {result?.mrp}
           </TableCell>
-          <TableCell align="center" sx={{ fontSize: "1.5rem" }}>
+          <TableCell align="center" sx={{ fontSize: "1.3rem" }}>
             {result?.mfgDate}
           </TableCell>
-          <TableCell align="center" sx={{ fontSize: "1.5rem" }}>
+          <TableCell align="center" sx={{ fontSize: "1.3rem" }}>
             {result?.expDate}
           </TableCell>
-          <TableCell align="center" sx={{ fontSize: "1.5rem" }}>
+          <TableCell align="center" sx={{ fontSize: "1.3rem" }}>
             <IconButton 
               onClick={() => handleRowClick(result)} 
               aria-label="edit"
