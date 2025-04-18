@@ -1,4 +1,12 @@
 import React, { useState, useEffect, useRef } from "react";
+import { Worker } from '@react-pdf-viewer/core';
+import { Viewer } from '@react-pdf-viewer/core';
+import { defaultLayoutPlugin } from '@react-pdf-viewer/default-layout';
+import '@react-pdf-viewer/core/lib/styles/index.css';
+import '@react-pdf-viewer/default-layout/lib/styles/index.css';
+import MenuIcon from '@mui/icons-material/Menu';
+import PlayCircleIcon from '@mui/icons-material/PlayCircle';
+import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
 import { FiRefreshCw } from "react-icons/fi";
 import * as XLSX from "xlsx";
 import { io } from "socket.io-client";
@@ -34,6 +42,8 @@ import {
   Box,
   Snackbar,
   Alert,
+  Menu,
+  MenuItem,
   Card, CardContent, Divider, Dialog, DialogTitle, DialogContent, DialogActions, CircularProgress
 } from "@mui/material";
 import DownloadIcon from "@mui/icons-material/Download";
@@ -55,7 +65,12 @@ import {
 // import VideoComponent from "./updatedVideoPage";
 import logo from "./image/logo.jpeg";
 import WorkflowStatus from "./WorkflowStatus";
+import ThemeModeButton from "./theme_ button";
 export default function Home2() {
+  const [anchorElHelp, setAnchorElHelp] = useState(null);
+  const [openPdfModal, setOpenPdfModal] = useState(false);
+  const [openVideoModal, setOpenVideoModal] = useState(false);
+  const defaultLayoutPluginInstance = defaultLayoutPlugin();
   const [src, setSrc] = useState("http://localhost:8000/video")
   const lastKeyTime = useRef(0);
   const keyBuffer = useRef('');
@@ -97,7 +112,26 @@ export default function Home2() {
 
 
   // ✅ **Intro.js Walkthrough Function**
+  const handleHelpClick = (event) => {
+    setAnchorElHelp(event.currentTarget);
+  };
+
+  const handleHelpClose = () => {
+    setAnchorElHelp(null);
+  };
+
+  const handlePdfOpen = () => {
+    setOpenPdfModal(true);
+    handleHelpClose();
+  };
+
+  const handleVideoOpen = () => {
+    setOpenVideoModal(true);
+    handleHelpClose();
+  };
+
   const startTour = () => {
+    // handleHelpClose();
     const intro = introJs();
     intro.setOptions({
       steps: [
@@ -114,21 +148,41 @@ export default function Home2() {
           intro: "Shows the current temperature of the system.",
         },
         {
+          element: "#workflow-status",
+          intro: "This section displays real-time workflow status updates.",
+        },
+        {
           element: "#data-table",
           intro: "Here you can see the scanned product data.",
         },
         {
-          element: "#workflow-status",
-          intro: "This section displays real-time workflow status updates.",
+          element: "#download-csv-button",
+          intro: "Click here to download the data in CSV format for offline use or further analysis."
         },
         {
           element: "#health-check-button",
           intro: "You can always run a system health check by pressing this button.",
         },
+        
         {
-          element: "#start-walkthrough",
+          element: "#help-button",
+          intro: "Click here to access helpful resources. You can choose between the Walkthrough, User Manual, or Video Tutorial for guidance."
+        },
+        {
+          element: "#ui-walkthrough",
+          intro: "This option restarts the UI walkthrough.",
+        },
+        { element:"#User_Manual",
+          intro:"Click here to access the user manual, which provides detailed instructions on how to use the system."
+        },
+        { element: "#Tutorial_video",
+          intro: "Click here to watch the tutorial video, which guides you through the system's features and functionalities."
+        },
+        {
+          element: "#ui-walkthrough",
           intro: "You can always restart the walkthrough by clicking here.",
         }
+        
       ],
       showProgress: true,
       showBullets: false,
@@ -596,6 +650,12 @@ const handleGenerateQR = (result) => {
         console.log("Received status update:", data);
         setStatusUpdates(data);
       });
+      // Handle multicapoture updates
+      newSocket.on("multicapture-status", (data) => {
+        console.log("Received multicapture status update:", data);
+        // setStatusUpdates(data);
+        handleMulticaptureStatus(data);
+      });
 
 
 
@@ -710,6 +770,17 @@ const handleGenerateQR = (result) => {
       handleClose();
     } else {
       setError(true);
+    }
+  };
+
+  const handleMulticaptureStatus = (data) => {
+    console.log("Received multicapture status update:", data);
+    if (data) {
+      setSnackbarConfig({
+        open: true,
+        message: "Multicapture mode activated! Please turn the product slowly.",
+        severity: "success",
+      });
     }
   };
   const [fileExcel, setFileExcel] = useState(null);
@@ -849,27 +920,7 @@ const handleGenerateQR = (result) => {
 
         {/* ✅ Action Buttons */}
         <div className="w-full flex -mt-16 z-50 justify-end p-4 space-x-4">
-          <Button
-            id="start-walkthrough"
-            variant="contained"
-            color="primary"
-            onClick={startTour}
-            startIcon={<HelpOutlineIcon />}
-          >
-            Start Walkthrough
-          </Button>
-
-          <Button
-            id="health-check-button"
-            variant="contained"
-            color="secondary"
-            onClick={handleRunHealthCheck}
-            startIcon={<HealthAndSafetyIcon />}
-          >
-            Run Health Check
-          </Button>
-
-          <Button
+        <Button
             id="download-csv-button"
             variant="contained"
             color="success"
@@ -922,6 +973,121 @@ const handleGenerateQR = (result) => {
           >
             Download CSV
           </Button>
+
+          <Button
+            id="health-check-button"
+            variant="contained"
+            color="secondary"
+            onClick={handleRunHealthCheck}
+            startIcon={<HealthAndSafetyIcon />}
+          >
+            Run Health Check
+          </Button>
+
+          <Button
+            id="help-button"
+            variant="contained"
+            color="primary"
+            onClick={handleHelpClick}
+
+            startIcon={<HelpOutlineIcon />}
+          >
+            Help & Tutorials
+          </Button>
+          <Menu
+            anchorEl={anchorElHelp}
+            open={Boolean(anchorElHelp)}
+            onClose={handleHelpClose}
+          >
+            <MenuItem id="ui-walkthrough" onClick={startTour}>
+              <MenuIcon sx={{ mr: 1 }} /> UI Walkthrough
+            </MenuItem>
+            <MenuItem id="User_Manual" onClick={handlePdfOpen}>
+              <PictureAsPdfIcon sx={{ mr: 1 }} /> User Manual
+            </MenuItem>
+            <MenuItem id="Tutorial_video" onClick={handleVideoOpen}>
+              <PlayCircleIcon sx={{ mr: 1 }} /> Tutorial Video
+            </MenuItem>
+          </Menu>
+
+          {/* PDF Viewer Modal */}
+          <Modal
+            open={openPdfModal}
+            onClose={() => setOpenPdfModal(false)}
+            aria-labelledby="pdf-modal-title"
+            aria-describedby="pdf-modal-description"
+          >
+            <Box sx={{
+              position: 'absolute',
+              top: '50%',
+              left: '50%',
+              transform: 'translate(-50%, -50%)',
+              width: '90%',
+              height: '90%',
+              bgcolor: 'background.paper',
+              boxShadow: 24,
+              p: 4,
+              display: 'flex',
+              flexDirection: 'column'
+            }}>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
+                <Typography variant="h6">User Manual</Typography>
+                <IconButton onClick={() => setOpenPdfModal(false)}>
+                  <FaWindowClose />
+                </IconButton>
+              </Box>
+              <Box sx={{ flex: 1, overflow: 'hidden' }}>
+                <Worker workerUrl="https://unpkg.com/pdfjs-dist@3.4.120/build/pdf.worker.min.js">
+                  <Viewer
+                    fileUrl="/assets/Vision_Cave_User_Manual.pdf"
+                    plugins={[defaultLayoutPluginInstance]}
+                  />
+                </Worker>
+              </Box>
+            </Box>
+          </Modal>
+
+          {/* Video Player Modal */}
+          <Modal
+            open={openVideoModal}
+            onClose={() => setOpenVideoModal(false)}
+            aria-labelledby="video-modal-title"
+            aria-describedby="video-modal-description"
+          >
+            <Box sx={{
+              position: 'absolute',
+              top: '50%',
+              left: '50%',
+              transform: 'translate(-50%, -50%)',
+              width: '90%',
+              maxWidth: '1200px',
+              bgcolor: 'background.paper',
+              boxShadow: 24,
+              p: 4,
+              display: 'flex',
+              flexDirection: 'column'
+            }}>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
+                <Typography variant="h6">Tutorial Video</Typography>
+                <IconButton onClick={() => setOpenVideoModal(false)}>
+                  <FaWindowClose />
+                </IconButton>
+              </Box>
+              <Box sx={{ width: '100%', aspectRatio: '16/9' }}>
+                <video
+                  width="100%"
+                  height="100%"
+                  controls
+                  style={{ maxHeight: '80vh' }}
+                >
+                  <source src="/assets/vision_cave_tutorial.mp4" type="video/mp4" />
+                  Your browser does not support the video tag.
+                </video>
+              </Box>
+            </Box>
+          </Modal>
+
+          
         </div>
 
         {/* <div className="w-full flex justify-between">
@@ -1323,3 +1489,4 @@ const handleGenerateQR = (result) => {
     </>
   );
 }
+
